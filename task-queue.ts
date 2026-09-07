@@ -296,9 +296,14 @@ export default function (pi: ExtensionAPI) {
     description:
       "Queue prompts to run one-by-one in fresh sessions: /tasks add|list|remove|clear|next|start|stop",
     getArgumentCompletions: (prefix: string): { value: string; label: string }[] | null => {
+      // Only complete the subcommand itself. As soon as the user starts typing
+      // the task text (e.g. `/tasks add hello`), stop offering completions so
+      // Enter submits the message instead of picking a completion.
+      const typed = prefix.replace(/^\s+/, "");
+      if (typed.includes(" ") || typed === "add") return null;
       const subs = ["add", "list", "remove", "clear", "next", "retry", "start", "stop"];
       const items = subs
-        .filter((s) => s.startsWith(prefix.split(" ")[0] || ""))
+        .filter((s) => s.startsWith(typed))
         .map((s) => ({ value: `${s} `, label: s }));
       return items.length > 0 ? items : null;
     },
